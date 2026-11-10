@@ -14,7 +14,7 @@
     "test:corpus:raw": "node scripts/replay-raw-corpus.mjs"
   },
   "dependencies": {
-    "parsanol": "git+https://github.com/suleman-uzair/parsanol-ts.git#7b6e07b41c21bc85d1366317d91d29a0eee4cfef"
+    "parsanol": "git+https://github.com/suleman-uzair/parsanol-ts.git#4c61875d96937ed228d5344de70beb7999388e2e"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
