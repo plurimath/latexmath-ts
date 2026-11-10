@@ -26,4 +26,10 @@ jobs:
       - run: npm run check:artifacts
       - run: npm run build
       - run: npm test
+      - uses: actions/checkout@v4
+        with:
+          repository: plurimath/plurimath-testsuite
+          ref: 0d50db714d75e3883a507fbc47022eb547fb027f
+          path: .corpus
+      - run: npm run test:corpus:raw -- .corpus
       - run: npm pack --ignore-scripts

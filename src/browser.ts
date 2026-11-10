@@ -57,7 +57,13 @@ export class Parser {
     let shape: unknown;
     try { shape = runtime.parseShape(text); }
     catch (error) {
-      if (/recurs|stack|nesting/i.test(String(error))) throw new NestingTooDeep(String(error), input, null);
+      // Expected-token lists may include names such as substack or stackrel.
+      // Only explicit resource failures identify an actual depth refusal.
+      if ((error instanceof Error && error.name === 'NestingTooDeep') ||
+          (error instanceof RangeError && /maximum call stack size exceeded/i.test(error.message)) ||
+          (/^(?:NestingTooDeep:|recursion limit exceeded\b|maximum nesting depth exceeded\b|maximum call stack size exceeded\b|too much recursion\b|call stack exhausted\b|stack overflow\b|stack limit exceeded\b)/i.test(error instanceof Error ? error.message : String(error)))) {
+        throw new NestingTooDeep(String(error), input, null);
+      }
       let offset: number|null = null;
       try {
         const failure = runtime.parseShapeRecovering?.(text);

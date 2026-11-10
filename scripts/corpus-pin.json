@@ -1,0 +1,9 @@
+{
+  "language": "latex",
+  "generation": 3,
+  "path": "stages/latex/generations/000003",
+  "snapshot_digest": "sha256:782cb6ee7c75ec1e38ed343301c2220ad14c283b96e5cf9eac2a4ff39b1aeceb",
+  "provenance_sha256": "93d9498a908f7b4f7f4d23abe3d7c74b36afba3e33e854278331bf07b9caeffb",
+  "repository": "https://github.com/plurimath/plurimath-testsuite",
+  "revision": "0d50db714d75e3883a507fbc47022eb547fb027f"
+}

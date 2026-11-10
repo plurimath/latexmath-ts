@@ -10,7 +10,8 @@
     "build": "tsc -p tsconfig.json",
     "check:artifacts": "node scripts/verify-artifacts.mjs",
     "test": "node --test test/*.test.mjs",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test:corpus:raw": "node scripts/replay-raw-corpus.mjs"
   },
   "dependencies": {
     "parsanol": "0.10.44"
