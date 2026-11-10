@@ -57,6 +57,8 @@ export class Parser {
     let shape: unknown;
     try { shape = runtime.parseShape(text); }
     catch (error) {
+      if (typeof WebAssembly !== "undefined" && error instanceof WebAssembly.RuntimeError) throw error;
+      if (error instanceof Error && ['CallDepthLimitExceeded', 'RecursionLimitExceeded', 'ShapeDepthLimitExceeded'].includes(error.name)) throw error;
       // Expected-token lists may include names such as substack or stackrel.
       // Only explicit resource failures identify an actual depth refusal.
       if ((error instanceof Error && error.name === 'NestingTooDeep') ||
