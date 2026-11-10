@@ -1,0 +1,50 @@
+{
+  "name": "@plurimath/latexmath-ts",
+  "version": "0.1.0-alpha.0",
+  "private": true,
+  "description": "latexmath shared PARG/WASM stage runtime",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check:artifacts": "node scripts/verify-artifacts.mjs",
+    "test": "node --test test/*.test.mjs",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "parsanol": "0.10.44"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript": "6.0.3",
+    "yaml": "2.9.1"
+  },
+  "license": "BSD-2-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/plurimath/latexmath-ts"
+  },
+  "files": [
+    "dist/",
+    "artifacts/",
+    "grammars/",
+    "model/",
+    "LICENSE.md",
+    "data/"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser.js"
+    },
+    "./artifacts/*": "./artifacts/*"
+  }
+}

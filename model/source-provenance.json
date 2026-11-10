@@ -1,0 +1,12 @@
+{
+  "template": {
+    "repository": "https://github.com/unitsml/amath-ts",
+    "commit": "cf018af90f43d0bbd03b3f0b1f607e173336b1ae"
+  },
+  "preprocessor": {
+    "repository": "https://github.com/plurimath/plurimath-ts",
+    "commit": "15f17b796cd3989c2ee17af1f3f7f287db8294fa",
+    "path": "src/formats/latex/preprocess.ts"
+  },
+  "status": "implementation in progress; not a completed runtime"
+}

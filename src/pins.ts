@@ -1,0 +1,6 @@
+export const SOURCE_COMMIT = "256d134b4d741500e033741785f2eb5540f64930";
+export const DIGESTS = {
+  "artifact": "2e8e17ce8490211ea6d78c6bb55ff7125a47b3537211b72c1bb7677432c7e5b3",
+  "bindings": "d5ab0691054d83b53022f58fcb6d5e39b0381113d1b12b5a9c23b0f0a9f5bd93",
+  "wrappers": "896f022c882d7934d9830bec6a7cd29bace0c6153160432a478a889fd653b989"
+} as const;
