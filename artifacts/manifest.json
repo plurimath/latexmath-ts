@@ -1,0 +1,11 @@
+{
+  "repository": "https://github.com/plurimath/latexmath",
+  "commit": "256d134b4d741500e033741785f2eb5540f64930",
+  "files": {
+    "artifacts/latex.json": "2e8e17ce8490211ea6d78c6bb55ff7125a47b3537211b72c1bb7677432c7e5b3",
+    "artifacts/latex.bindings.ts.json": "d5ab0691054d83b53022f58fcb6d5e39b0381113d1b12b5a9c23b0f0a9f5bd93",
+    "grammars/latex.parg": "a1025ab6e3570568d70bc823e9e61b50da484ecbf203eb318837578954300a44",
+    "grammars/latex.wrappers.json": "896f022c882d7934d9830bec6a7cd29bace0c6153160432a478a889fd653b989",
+    "data/latex-symbols.json": "ab53ef99c16e1ff784c3b2ff6b438ee67e6851b51512ad86d0602cd8fc95e383"
+  }
+}
