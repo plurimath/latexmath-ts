@@ -87,6 +87,16 @@ export class Parser {
     return legacyTree(state.bound.latex_tree, state.text, this.wrappers);
   }
   parse(input: string, options: Options = {}): LatexmathModelDocument {
+    // Latexmath.parse (Ruby 372e377 stage model_outcome) and latexmath-rs parse_model: when the
+    // preprocessed text is empty (e.g. whitespace-only input) the Document carries only the decimal;
+    // the grammar is not run. The raw boundary (parseTree) keeps refusing such input.
+    if (typeof input === 'string' && preprocess(input).text === '') {
+      const decimal = options.decimal ?? '.';
+      if (!Object.hasOwn(entries, decimal)) throw new RangeError('unsupported decimal marker');
+      for (const key of Object.keys(options)) if (!['decimal', 'engine'].includes(key)) throw new RangeError(`unknown parse option ${key}`);
+      if (options.engine === 'ruby') throw new EngineUnavailable('Ruby interpreter fallback is unavailable in WASM');
+      return decodeLatexmathModelDocument({ decimal });
+    }
     const document = this.parseBindings(input,options);
     const pending: unknown[]=[document];
     while(pending.length) {
