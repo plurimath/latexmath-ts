@@ -33,3 +33,29 @@ jobs:
           path: .corpus
       - run: npm run test:corpus:raw -- .corpus
       - run: npm pack --ignore-scripts
+  # Install the packed tarball into a clean consumer and parse through the
+  # package specifier on the oldest supported and the current Node.
+  packed-node:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install --ignore-scripts
+      - run: npm run build
+      - name: Install the tarball into a clean consumer and parse
+        run: |
+          node --version
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP"
+          mkdir "$RUNNER_TEMP/consumer"
+          cp scripts/check-packed-node.mjs "$RUNNER_TEMP/consumer/"
+          cd "$RUNNER_TEMP/consumer"
+          echo '{"name":"consumer","private":true,"type":"module"}' > package.json
+          npm install --no-audit --no-fund ../plurimath-latexmath-ts-*.tgz
+          node check-packed-node.mjs

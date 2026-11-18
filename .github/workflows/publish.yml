@@ -1,0 +1,76 @@
+name: Publish to npm
+
+# Trusted publishing (keyless OIDC), following parsanol/parsanol-ts and
+# plurimath/plurimath-ts. Runs only on a v* tag or a manual dispatch from
+# main; never on push to main. Requires the package to be registered for
+# trusted publishing on npmjs.com (repository: latexmath-ts, workflow:
+# publish.yml) and package.json to drop "private": true.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Package version to publish (must match package.json)
+        required: true
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify release version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+          const requested = process.env.GITHUB_REF_TYPE === 'tag'
+            ? process.env.GITHUB_REF_NAME.slice(1) : process.env.REQUESTED_VERSION;
+          assert.equal(pkg.name, '@plurimath/latexmath-ts');
+          assert.notEqual(pkg.private, true, 'package.json is private; drop "private" before publishing');
+          assert.equal(requested, pkg.version, 'Requested version must match package.json');
+          JS
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Set up npm trusted publishing
+        run: npm install --global npm@^11
+      - run: npm install --ignore-scripts
+      - run: npm run check:artifacts
+      - run: npm run build
+      - run: npm run test
+      - name: Pack
+        id: pack
+        run: |
+          file=$(npm pack --ignore-scripts --json --pack-destination "$RUNNER_TEMP" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s)[0].filename))')
+          echo "tarball=$RUNNER_TEMP/$file" >> "$GITHUB_OUTPUT"
+      - name: Install the tarball into a clean consumer and parse
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: |
+          mkdir "$RUNNER_TEMP/consumer"
+          cp scripts/check-packed-node.mjs "$RUNNER_TEMP/consumer/"
+          cd "$RUNNER_TEMP/consumer"
+          echo '{"name":"consumer","private":true,"type":"module"}' > package.json
+          npm install --no-audit --no-fund "$TARBALL"
+          node check-packed-node.mjs
+      - name: Publish verified tarball
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+          NODE_AUTH_TOKEN: "" # trusted publishing only, no token
+        run: npm publish "$TARBALL" --provenance --access public
