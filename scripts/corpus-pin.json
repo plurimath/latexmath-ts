@@ -1,19 +1,19 @@
 {
   "language": "latex",
-  "generation": 3,
-  "path": "stages/latex/generations/000003",
-  "snapshot_digest": "sha256:782cb6ee7c75ec1e38ed343301c2220ad14c283b96e5cf9eac2a4ff39b1aeceb",
-  "provenance_sha256": "93d9498a908f7b4f7f4d23abe3d7c74b36afba3e33e854278331bf07b9caeffb",
+  "generation": 4,
+  "path": "stages/latex/generations/000004",
+  "snapshot_digest": "sha256:a657a0c61602ffdc9c02f3533f8671f92e38c42ee679d50ded38efd0e69ae0ce",
+  "provenance_sha256": "40eadde7c1c85b97a7841fbda2830b3700ee96848bfd2114cdb4f18574152fde",
   "repository": "https://github.com/plurimath/plurimath-testsuite",
-  "revision": "337262eda0483ceaa43a02cc52362c5b721e5eb3",
+  "revision": "9767c37a8d7bb21a0694780ecfcbc4f1fbd9eb39",
   "boundaries": {
     "raw-tree": {
       "rows": 139,
       "ids_sha256": "7c6f717194adf71ba4594a1acaad72afdca70ee53cc700a22498201a2658b2ae"
     },
     "typed-model": {
-      "rows": 139,
-      "ids_sha256": "a4effd5eda38bbe6198cbc3736447027d78ee0c80ac02b65433e8d49a7df1129"
+      "rows": 247,
+      "ids_sha256": "4fa96e1cdfa9e4df1bc3754e0319218f1249e757315f60b52e24b051e722ed1b"
     }
   },
   "api": "Parser.parseTree (raw-tree); Parser.parse typed model (typed-model)"
