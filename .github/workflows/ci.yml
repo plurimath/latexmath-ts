@@ -29,9 +29,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: plurimath/plurimath-testsuite
-          ref: 0d50db714d75e3883a507fbc47022eb547fb027f
+          ref: 337262eda0483ceaa43a02cc52362c5b721e5eb3
           path: .corpus
-      - run: npm run test:corpus:raw -- .corpus
+      # Latex generation 3, replayed raw-tree and typed-model (139 rows each).
+      # The pin checks the generation digest, payload checksums and the
+      # executed row IDs of both boundaries; every row must match.
+      - name: Replay generation 3 (raw-tree and typed-model)
+        shell: bash
+        run: >
+          npm run test:corpus -- .corpus --pin corpus-pin.json
+          --report "$RUNNER_TEMP/replay-3.json" --executed "$RUNNER_TEMP/executed-3.txt"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: latex-generation-3-${{ matrix.os }}-node${{ matrix.node }}
+          path: ${{ runner.temp }}/replay-3.json
+          if-no-files-found: ignore
       - run: npm pack --ignore-scripts
   # Install the packed tarball into a clean consumer and parse through the
   # package specifier on the oldest supported and the current Node.

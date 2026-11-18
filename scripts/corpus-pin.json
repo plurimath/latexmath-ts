@@ -5,5 +5,16 @@
   "snapshot_digest": "sha256:782cb6ee7c75ec1e38ed343301c2220ad14c283b96e5cf9eac2a4ff39b1aeceb",
   "provenance_sha256": "93d9498a908f7b4f7f4d23abe3d7c74b36afba3e33e854278331bf07b9caeffb",
   "repository": "https://github.com/plurimath/plurimath-testsuite",
-  "revision": "0d50db714d75e3883a507fbc47022eb547fb027f"
+  "revision": "337262eda0483ceaa43a02cc52362c5b721e5eb3",
+  "boundaries": {
+    "raw-tree": {
+      "rows": 139,
+      "ids_sha256": "7c6f717194adf71ba4594a1acaad72afdca70ee53cc700a22498201a2658b2ae"
+    },
+    "typed-model": {
+      "rows": 139,
+      "ids_sha256": "a4effd5eda38bbe6198cbc3736447027d78ee0c80ac02b65433e8d49a7df1129"
+    }
+  },
+  "api": "Parser.parseTree (raw-tree); Parser.parse typed model (typed-model)"
 }
