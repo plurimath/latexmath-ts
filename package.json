@@ -11,7 +11,9 @@
     "check:artifacts": "node scripts/verify-artifacts.mjs",
     "test": "node --test test/*.test.mjs",
     "prepare": "npm run build",
-    "test:corpus": "node scripts/replay-corpus.mjs"
+    "test:corpus": "node scripts/replay-corpus.mjs",
+    "check:wasm": "node scripts/verify-wasm.mjs",
+    "test:wasm-corpus": "node scripts/wasm-differential.mjs"
   },
   "dependencies": {
     "parsanol": "1.5.7"
@@ -32,7 +34,8 @@
     "grammars/",
     "model/",
     "LICENSE.md",
-    "data/"
+    "data/",
+    "wasm/"
   ],
   "engines": {
     "node": ">=22"
@@ -46,6 +49,11 @@
       "types": "./dist/browser.d.ts",
       "import": "./dist/browser.js"
     },
-    "./artifacts/*": "./artifacts/*"
+    "./artifacts/*": "./artifacts/*",
+    "./wasm": {
+      "types": "./dist/wasm.d.ts",
+      "import": "./dist/wasm.js"
+    },
+    "./wasm/*": "./wasm/*"
   }
 }
