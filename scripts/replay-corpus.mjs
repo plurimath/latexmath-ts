@@ -24,6 +24,8 @@ import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { isDeepStrictEqual, parseArgs } from "node:util";
 import { parse } from "yaml";
+import { verifyLedger } from "./corpus-pin.mjs";
+import { model, omitted } from "./model-wire.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const { values: args, positionals } = parseArgs({
@@ -50,6 +52,7 @@ const dist = resolve(process.env.LATEXMATH_TS_DIST ?? resolve(here, "../dist"));
 const { initialize, ParseError } = await import(pathToFileURL(resolve(dist, "index.js")).href);
 
 const pin = JSON.parse(readFileSync(resolve(here, args.pin), "utf8"));
+verifyLedger(root, pin);
 const generation = resolve(root, pin.path);
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
@@ -99,36 +102,6 @@ function value(node) {
   throw new Error("unsupported raw corpus atom " + Object.keys(node).join(","));
 }
 
-// Ruby model wire ({node, fields}, nil and unset fields left out) for a
-// generated model. Fields come out in declaration order, as the Ruby producer
-// writes them. A field in `derived` is computed from the bound data (the
-// symbol catalog), and a row written before the model declared it does not
-// record it: it is left out when the row's object has no entry for it, and
-// reported. A derived field the row does record must match.
-const derived = { "Latexmath::Model::MathSymbol": new Set(["value", "kind"]) };
-const omitted = new Set();
-function model(v, expected) {
-  if (v === null || v === undefined || typeof v === "symbol") return undefined;
-  if (typeof v === "string") return { str: v };
-  if (Array.isArray(v)) {
-    const items = Array.isArray(expected?.array) ? expected.array : [];
-    return { array: v.map((x, i) => model(x, items[i])) };
-  }
-  const name = v.constructor.name;
-  if (!name.startsWith("LatexmathModel")) throw new Error("not a generated model: " + name);
-  const node = "Latexmath::Model::" + name.slice(14);
-  const recorded = expected && typeof expected === "object" && expected.node === node ? new Map(expected.fields) : null;
-  const fields = [];
-  for (const [k, x] of Object.entries(v)) {
-    if (derived[node]?.has(k) && recorded && !recorded.has(k)) {
-      omitted.add(`${node}#${k}`);
-      continue;
-    }
-    const wire = model(x, recorded?.get(k));
-    if (wire !== undefined) fields.push([k, wire]);
-  }
-  return { node, fields };
-}
 function differs(kind, a, e) {
   let i = 0;
   while (a[i] === e[i]) i++;
