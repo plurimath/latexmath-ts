@@ -14,7 +14,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-latest, windows-latest]
-        node: [22, 24]
+        node: ['22.0.0', 24]
+        # npm bundled with Node 22.0.0 fails before running on the Windows
+        # image's global prefix; test the current Node 22 line there.
+        exclude:
+          - os: windows-latest
+            node: '22.0.0'
+        include:
+          - os: windows-latest
+            node: 22
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     steps:
@@ -52,7 +60,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [22, 24]
+        node: ['22.0.0', 24]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:

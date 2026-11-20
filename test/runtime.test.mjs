@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { before, test } from 'node:test';
+import { test } from 'node:test';
 import { initialize, Model, modelJson } from '../dist/index.js';
-let parser;
-before(async()=>{parser=await initialize()});
+// Node 22.0 starts top-level tests before an async root before() hook settles.
+const parser=await initialize();
 const samples=["x", "\\alpha", "\\frac{1}{2}", "\\sqrt{x}", "\\text{a b}"];
 for(const input of samples)test('typed/raw shared-artifact parse: '+input,()=>{
  const value=parser.parse(input);assert(value instanceof Model.LatexmathModelDocument);
