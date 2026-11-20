@@ -1,0 +1,47 @@
+name: Rust WASM backend
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  differential:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-latest]
+        node: [22, 24]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install --ignore-scripts
+      - run: npm run check:wasm
+      - run: npm run build
+      - run: node --test test/rust-wasm.test.mjs
+      - uses: actions/checkout@v4
+        with:
+          repository: plurimath/plurimath-testsuite
+          ref: 9767c37a8d7bb21a0694780ecfcbc4f1fbd9eb39
+          path: .wasm-corpus
+          persist-credentials: false
+      - run: npm run test:wasm-corpus -- .wasm-corpus
+      - name: Verify packed WASM entry and assets
+        shell: bash
+        run: |
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP"
+          mkdir "$RUNNER_TEMP/wasm-consumer"
+          cp scripts/check-packed-wasm.mjs "$RUNNER_TEMP/wasm-consumer/"
+          cd "$RUNNER_TEMP/wasm-consumer"
+          echo '{"name":"consumer","private":true,"type":"module"}' > package.json
+          npm install --no-audit --no-fund ../plurimath-latexmath-ts-*.tgz
+          node check-packed-wasm.mjs

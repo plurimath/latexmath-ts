@@ -1,0 +1,18 @@
+{
+  "repository": "plurimath/latexmath-rs",
+  "revision": "e459096ecbf216237fa6c0933b22d9787783e890",
+  "workflow": ".github/workflows/wasm.yml",
+  "run_id": 44749862549,
+  "run_attempt": 1,
+  "artifact_id": 14634698779,
+  "artifact_name": "stage-wasm-node-web",
+  "target": "web",
+  "wasm_pack": "0.13.1",
+  "files": {
+    "latexmath.js": "cb289950b972cc8fbd3238973ab1d299d70d38d7cd0c3ead39ae501b805ebb03",
+    "latexmath.d.ts": "f4af6e8bae3311356d01a93d1091c0f72a901c40894b69b8cc3adf199fe9707c",
+    "latexmath_bg.wasm": "e869e2920ce4c32f7032a2fd5a23a16d1f9a53c7ebb238882c648c03e6240d5b",
+    "latexmath_bg.wasm.d.ts": "0fd587cd7260fab1fe4e67f6c26d5b7a5e937ea35c0a76252643bab22b657dee",
+    "LICENSE": "8bb27670459027923124649be6582f3325a3ac9b1df5503130f2633a66f97938"
+  }
+}
