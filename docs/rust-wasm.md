@@ -28,9 +28,11 @@ makes no claim to match the default parser's detailed error offsets.
 `parseTree` representation. `serialize` is a generated model writer, not a
 source-text formatter. `parseJson` preserves its original byte order.
 
-`wasm/manifest.json` pins the Rust revision, successful WASM workflow run,
-artifact and SHA-256 for the unmodified web glue, declarations, binary and
-license. Run `npm run check:wasm` to verify those files. To update, download
+`wasm/manifest.json` pins the Rust revision, build provenance and SHA-256 for
+the unmodified web glue, declarations, binary and license. The current asset
+is built from merged Rust main with the recorded local toolchain and command;
+no CI artifact identity is claimed. Run `npm run check:wasm` to verify those
+files. To update, download
 `stage-wasm-node-web` from a successful pinned Rust WASM run, copy `wasm-web`
 files, and update the manifest and `src/wasm-asset.ts` hashes together.
 The dedicated CI workflow checks the packaged entry and runs a differential

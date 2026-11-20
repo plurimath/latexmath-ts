@@ -1,7 +1,7 @@
-/** Frozen CI build; hashes and provenance also ship in wasm/manifest.json. */
+/** Frozen Rust build; hashes and provenance also ship in wasm/manifest.json. */
 export const WASM_ASSET = Object.freeze({
   "repository": "plurimath/latexmath-rs",
-  "revision": "e459096ecbf216237fa6c0933b22d9787783e890",
-  "sha256": "e869e2920ce4c32f7032a2fd5a23a16d1f9a53c7ebb238882c648c03e6240d5b",
-  "bytes": 10954376
+  "revision": "ceb763d65391218588536c6dff0a9f6274d4a921",
+  "sha256": "a9e85e8a62b5b59d243d9ffe8080e13c65172c9582dc3ee0418c0cffe07d83a6",
+  "bytes": 10880753
 });
