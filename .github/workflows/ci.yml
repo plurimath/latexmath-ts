@@ -34,7 +34,7 @@ jobs:
       # Latex generation 4, replayed raw-tree (139 rows) and typed-model (247 rows: generation 3's 139 plus 108 -r2 rows).
       # The pin checks the generation digest, payload checksums and the
       # executed row IDs of both boundaries; every row must match.
-      - name: Replay generation 4 (raw-tree and typed-model)
+      - name: Verify ledger and replay generation 4 (raw-tree and typed-model)
         shell: bash
         run: >
           npm run test:corpus -- .corpus --pin corpus-pin.json
