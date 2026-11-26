@@ -7,7 +7,7 @@ import ts from 'typescript';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const source = resolve(process.argv[2] ?? '');
-const revision = '1242c7b6314dcadc42e3453e85c9f2fc879cd7ef';
+const revision = 'a91e37d59b81bd2d78654e26ec55ac7b91fd8117';
 if (execFileSync('git', ['-C', source, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim() !== revision) throw new Error('unexpected lutaml-ts source revision');
 if (execFileSync('git', ['-C', source, 'status', '--porcelain'], { encoding: 'utf8' }).trim()) throw new Error('lutaml-ts source must be clean');
 const build = join(root, '.build/lutaml-ts');
@@ -41,6 +41,6 @@ for (const [path, text] of files) {
   await writeFile(output, text);
 }
 await mkdir(join(root, 'src/upstream'), { recursive: true });
-await writeFile(join(root, 'src/upstream/lutaml-contracts.ts'), `// Vendored contract from lutaml/lutaml-ts@${revision} (BSD-2-Clause).\n` + await readFile(join(source, 'src/contracts.ts'), 'utf8'));
-await writeFile(join(root, 'model/codegen-provenance.json'), JSON.stringify({ repository: 'https://github.com/lutaml/lutaml-ts', revision, sourceFiles: inputs, bundleSha256: createHash('sha256').update(bundleText).digest('hex'), outputs: Object.fromEntries([...files].map(([path, text]) => [path, createHash('sha256').update(text).digest('hex')])) }, null, 2) + '\n');
+await writeFile(join(root, 'src/upstream/lutaml-contracts.ts'), `// Vendored contract from lutaml/lutaml-model-ts@${revision} (BSD-2-Clause).\n` + await readFile(join(source, 'src/contracts.ts'), 'utf8'));
+await writeFile(join(root, 'model/codegen-provenance.json'), JSON.stringify({ repository: 'https://github.com/lutaml/lutaml-model-ts', revision, sourceFiles: inputs, bundleSha256: createHash('sha256').update(bundleText).digest('hex'), outputs: Object.fromEntries([...files].map(([path, text]) => [path, createHash('sha256').update(text).digest('hex')])) }, null, 2) + '\n');
 console.log(`generated ${files.size} model/codec files from ${Object.keys(bundle.models).length} pinned LML declarations`);

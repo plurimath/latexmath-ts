@@ -21,7 +21,9 @@ export type ViolationCode =
   | "enum"
   | "facet"
   | "unknown_member"
-  | "ordered_content";
+  | "ordered_content"
+  | "choice_lower_bound"
+  | "choice_upper_bound";
 
 export interface Violation {
   /** JSON pointer relative to the validated model instance. */
@@ -256,6 +258,22 @@ function present(o: Rec, name: string): unknown {
   return value === undefined ? ABSENT : value;
 }
 
+/**
+ * Which members of a model instance were filled by their declared default. This is nonserialized provenance (Ruby:
+ * \`using_default?\`): a weak side table, never a field, so it cannot collide with a member and is invisible to dumps,
+ * equality and Object.keys. An explicit value that merely equals the default is NOT applied.
+ */
+const APPLIED = new WeakMap<object, ReadonlySet<string>>();
+
+export function markApplied(model: object, names: readonly string[]): void {
+  if (names.length > 0) APPLIED.set(model, new Set(names));
+}
+
+/** True when the member's value is the default the constructor applied (render.default:false suppresses it on write). */
+export function wasApplied(model: object, name: string): boolean {
+  return APPLIED.get(model)?.has(name) === true;
+}
+
 export interface AttrSpec {
   readonly name: string;
   readonly required: boolean;
@@ -263,6 +281,8 @@ export interface AttrSpec {
   readonly filled: boolean;
   readonly collection: { readonly min: number; readonly max: number | null } | null;
   readonly item: Check;
+  /** Choice-owned collection counts are checked by the deferred group. */
+  readonly choice?: boolean;
 }
 
 /** Absent, null and present are three distinct states. */
@@ -288,10 +308,10 @@ export function attr(out: Violation[], o: Rec, spec: AttrSpec): void {
     out.push({ path, code: "type", message: "expected an array" });
     return;
   }
-  if (value.length < spec.collection.min) {
+  if (!spec.choice && value.length < spec.collection.min) {
     out.push({ path, code: "min_items", message: "needs at least " + spec.collection.min + " items" });
   }
-  if (spec.collection.max !== null && value.length > spec.collection.max) {
+  if (!spec.choice && spec.collection.max !== null && value.length > spec.collection.max) {
     out.push({ path, code: "max_items", message: "allows at most " + spec.collection.max + " items" });
   }
   value.forEach((item: unknown, index: number) => {
@@ -304,6 +324,76 @@ function classify(problem: string): ViolationCode {
   if (problem.startsWith("expected one of")) return "enum";
   if (problem.startsWith("violates facet")) return "facet";
   return "type";
+}
+
+export interface ChoiceGroup {
+  readonly min: number;
+  readonly max: number | null;
+  readonly allowEmpty: boolean;
+  readonly optionalEmpty: boolean;
+  readonly members: readonly ({ readonly attribute: string; readonly collectionMax: number | null; readonly renderEmpty: boolean } | { readonly choice: ChoiceGroup })[];
+}
+export interface ChoiceModel {
+  readonly prototype: object;
+  validate(input: unknown, visiting?: WeakSet<object>): readonly Violation[];
+}
+/** Visit only trusted generated model instances, as Ruby visits Serialize values. */
+export function nestedChoices(out: Violation[], o: Rec, members: readonly string[], models: Readonly<Record<string, ChoiceModel>>, visiting: WeakSet<object>): void {
+  for (const name of members) {
+    const value = present(o, name);
+    const values = Array.isArray(value) ? value : [value];
+    values.forEach((item: unknown, index: number) => {
+      if (item === null || typeof item !== "object") return;
+      for (const model of Object.values(models)) {
+        if (!Object.prototype.isPrototypeOf.call(model.prototype, item)) continue;
+        const prefix = "/" + name.replace(/~/g, "~0").replace(/\//g, "~1") + (Array.isArray(value) ? "/" + index : "");
+        for (const problem of model.validate(item, visiting)) out.push({ ...problem, path: prefix + problem.path });
+        break;
+      }
+    });
+  }
+}
+function choicePresent(value: unknown): boolean {
+  if (value === ABSENT || value === null || value === undefined) return false;
+  if (typeof value === "string" || Array.isArray(value)) return value.length > 0;
+  return !isPlain(value) || Object.keys(value).length > 0;
+}
+function choiceEmpty(value: unknown): boolean {
+  return typeof value === "string" || Array.isArray(value) ? value.length === 0 : isPlain(value) && Object.keys(value).length === 0;
+}
+function choiceBounds(group: ChoiceGroup, count: number, location: string): Violation | null {
+  if (count >= group.min && (group.max === null || count <= group.max)) return null;
+  if (count === 0 && group.optionalEmpty) return null;
+  const lower = count < group.min;
+  return { path: "", code: lower ? "choice_lower_bound" : "choice_upper_bound", message: "choice " + location + (lower ? " needs at least " + group.min : " allows at most " + group.max) + " selected members" };
+}
+function checkChoice(o: Rec, group: ChoiceGroup, location: string): Violation | null {
+  let count = 0;
+  for (const [index, member] of group.members.entries()) {
+    if ("choice" in member) {
+      const problem = checkChoice(o, member.choice, location + "/members/" + index + "/choice");
+      if (problem?.code === "choice_upper_bound") return problem;
+      if (problem === null) count++;
+    } else {
+      const value = present(o, member.attribute);
+      if (choicePresent(value)) {
+        if (member.collectionMax !== null && Array.isArray(value)) {
+          const problem = choiceBounds(group, Math.ceil(value.length / member.collectionMax), location);
+          if (problem !== null) return problem;
+        }
+        count++;
+      } else if (member.renderEmpty && choiceEmpty(value)) count++;
+    }
+  }
+  if (count === 0 && group.allowEmpty) return null;
+  return choiceBounds(group, count, location);
+}
+/** The first failing root choice is reported; nested lower bounds mean unselected. */
+export function choices(out: Violation[], o: Rec, groups: readonly ChoiceGroup[]): void {
+  for (const [index, group] of groups.entries()) {
+    const problem = checkChoice(o, group, "/choices/groups/" + index);
+    if (problem !== null) { out.push(problem); return; }
+  }
 }
 
 /** Validates the portable per-instance ordered-content token list. */
@@ -327,8 +417,16 @@ export function orderedContent(
     };
     if (!isRecord(raw)) return bad("expected a token object");
     const kind = raw["kind"];
-    if (kind !== "element" && kind !== "text" && kind !== "cdata") return bad("unknown token kind");
-    if (kind !== "element" && typeof raw["literal"] === "string") return;
+    if (kind === "comment") {
+      if (typeof raw["literal"] !== "string") bad("needs a string literal");
+      return;
+    }
+    if (kind === "processing_instruction") {
+      if (typeof raw["target"] !== "string" || typeof raw["data"] !== "string") bad("needs a string target and data");
+      return;
+    }
+    if (kind !== "element" && kind !== "text" && kind !== "cdata" && kind !== "attribute") return bad("unknown token kind");
+    if ((kind === "text" || kind === "cdata") && typeof raw["literal"] === "string") return;
     const attribute = raw["attribute"];
     const position = raw["index"];
     if (typeof attribute !== "string" || !attributes.includes(attribute)) {
@@ -337,6 +435,7 @@ export function orderedContent(
     if (typeof position !== "number" || !Number.isInteger(position) || position < 0) {
       return bad("needs a non-negative integer index");
     }
+    if (kind === "attribute" && position !== 0) return bad("an attribute token needs index 0");
     const target = present(o, attribute);
     if (target === ABSENT || target === null) return bad("references an absent member");
     const size = Array.isArray(target) ? target.length : 1;

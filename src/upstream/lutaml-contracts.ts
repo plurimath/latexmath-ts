@@ -1,4 +1,4 @@
-// Vendored contract from lutaml/lutaml-ts@1242c7b6314dcadc42e3453e85c9f2fc879cd7ef (BSD-2-Clause).
+// Vendored contract from lutaml/lutaml-model-ts@a91e37d59b81bd2d78654e26ec55ac7b91fd8117 (BSD-2-Clause).
 /**
  * Typed contract for LML v2 documents and bundles, mirroring the agreed
  * interface in lutaml/lutaml-model#1033 (01-DOCUMENT-CONTRACT).
@@ -75,7 +75,10 @@ export interface XmlRule {
   readonly kind: "attribute" | "element" | "content" | "any_attribute";
   /** Ordered aliases; absent for content rules. */
   readonly name?: readonly string[];
-  readonly to: string;
+  /** Declared attribute; a rule with `custom` may omit it (hook-only rule). */
+  readonly to?: string;
+  /** Names of handwritten hooks: `to` writes the rule's whole output, `from` reads its value. */
+  readonly custom?: CustomSerialization;
   readonly namespace?: NamespaceSpec;
   readonly prefix?: string;
   readonly cdata?: boolean;
@@ -83,10 +86,24 @@ export interface XmlRule {
   readonly discriminator?: Discriminator;
 }
 
+/**
+ * Names (never bodies) of handwritten serialization hooks. Key-value rules: `to` is the WRITE
+ * hook `(model, document_object)`, `from` the READ hook `(model, value)`. XML rules: `to` writes
+ * the rule's whole output `(model, parent, builder)`, `from` reads its value `(model, value)`.
+ */
+export interface CustomSerialization {
+  readonly to?: string;
+  readonly from?: string;
+}
+
 export interface KeyValueRule {
   readonly key: readonly string[];
-  readonly to: string;
+  /** Declared attribute; a rule with `custom` may omit it (hook-only rule). */
+  readonly to?: string;
+  readonly custom?: CustomSerialization;
   readonly render?: RenderPolicy;
+  /** Rule-level polymorphism (finite cases), the same shape as an attribute's. */
+  readonly discriminator?: Discriminator;
 }
 
 export interface XmlMapping {
@@ -119,7 +136,34 @@ export type OrderedContentToken =
       readonly attribute: string;
       readonly index: number;
     }
-  | { readonly kind: "text" | "cdata"; readonly literal: string };
+  | { readonly kind: "text" | "cdata"; readonly literal: string }
+  /** An XML comment kept where it was read; `literal` is the comment body. */
+  | { readonly kind: "comment"; readonly literal: string }
+  /** An XML processing instruction kept where it was read. */
+  | { readonly kind: "processing_instruction"; readonly target: string; readonly data: string }
+  /**
+   * Input attribute order, present only when it differs from the declaration order.
+   * A writer emits the listed attributes first, in token order, then the rest in
+   * declaration order. `index` is always 0.
+   */
+  | { readonly kind: "attribute"; readonly attribute: string; readonly index: 0 };
+
+/** Declarative model choices run only on explicit model validation. */
+export interface ModelChoices {
+  readonly version: 1;
+  readonly validation: "explicit";
+  readonly groups: readonly ModelChoiceGroup[];
+}
+export interface ModelChoiceGroup {
+  readonly min: number;
+  readonly max: number | null;
+  /** XML mapping render-empty policies affect presence; null disables them. */
+  readonly format: "xml" | null;
+  readonly members: readonly ModelChoiceMember[];
+}
+export type ModelChoiceMember =
+  | { readonly attribute: string }
+  | { readonly choice: ModelChoiceGroup };
 
 export interface ModelDocument {
   readonly lml: typeof LML_DOCUMENT_VERSION;
@@ -128,6 +172,13 @@ export interface ModelDocument {
   readonly attributes: readonly AttributeSpec[];
   readonly mappings: Mappings;
   readonly ordered_content?: OrderedContentSpec;
+  readonly choices?: ModelChoices;
+  /**
+   * Present (always `true`) when the source model has a handwritten
+   * initializer. No body travels in the document: targets emit a stub and the
+   * consumer supplies the implementation. Absent means a plain data constructor.
+   */
+  readonly custom_initialize?: true;
 }
 
 export interface ValueTypeSpec {
@@ -160,6 +211,7 @@ export type ErrorCode =
   | "non_serializable_default"
   | "lambda_default"
   | "custom_initialize"
+  | "custom_serialization"
   | "imperative_element_order"
   | "invalid_ordered_content"
   | "reserved_member"
@@ -183,6 +235,7 @@ export const ERROR_CODES: readonly ErrorCode[] = [
   "non_serializable_default",
   "lambda_default",
   "custom_initialize",
+  "custom_serialization",
   "imperative_element_order",
   "invalid_ordered_content",
   "reserved_member",
@@ -226,6 +279,8 @@ export interface TypeBinding {
   readonly module: string;
   /** Exported TypeScript name. */
   readonly export: string;
+  /** Use parse<Name>Xml and format<Name>Xml for raw XML lexical values. */
+  readonly xmlLexical?: true;
 }
 
 export interface Bindings {
