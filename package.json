@@ -15,12 +15,13 @@
     "check:wasm": "node scripts/verify-wasm.mjs",
     "test:wasm-corpus": "node scripts/wasm-differential.mjs"
   },
-  "dependencies": {},
+  "dependencies": {
+    "parsanol": "git+https://github.com/suleman-uzair/parsanol-ts.git#af5d8cc8825f5e866dd2a52225fda7d945a1598d"
+  },
   "devDependencies": {
     "@types/node": "22.20.5",
     "typescript": "6.0.3",
-    "yaml": "2.9.1",
-    "parsanol": "1.5.22"
+    "yaml": "2.9.1"
   },
   "license": "BSD-2-Clause",
   "repository": {
@@ -55,7 +56,5 @@
     },
     "./wasm/*": "./wasm/*"
   },
-  "peerDependencies": {
-    "parsanol": "1.5.22"
-  }
+  "peerDependencies": {}
 }

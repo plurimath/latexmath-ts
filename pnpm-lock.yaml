@@ -7,13 +7,14 @@ settings:
 importers:
 
   .:
+    dependencies:
+      parsanol:
+        specifier: git+https://github.com/suleman-uzair/parsanol-ts.git#af5d8cc8825f5e866dd2a52225fda7d945a1598d
+        version: https://codeload.github.com/suleman-uzair/parsanol-ts/tar.gz/af5d8cc8825f5e866dd2a52225fda7d945a1598d
     devDependencies:
       '@types/node':
         specifier: 22.20.5
         version: 22.20.5
-      parsanol:
-        specifier: 1.5.22
-        version: 1.5.22
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -26,8 +27,9 @@ packages:
   '@types/node@22.20.5':
     resolution: {integrity: sha512-U2+DNr+wSjpsTS/wZGYHq7GcwfuSmKiKvoPvK22zwTlRhU91yOniN4qRR5KhIjvif7ysw/dz/hKmfDH0Ris4aA==}
 
-  parsanol@1.5.22:
-    resolution: {integrity: sha512-/+n26zB396u6zZCs8/UpDjdizGBCYYpzCZwl8VbbPDkqLPZPD8oAR1E9uvHTIyhslEmzgN/LOKR9xDpp2zXGMg==}
+  parsanol@https://codeload.github.com/suleman-uzair/parsanol-ts/tar.gz/af5d8cc8825f5e866dd2a52225fda7d945a1598d:
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/suleman-uzair/parsanol-ts/tar.gz/af5d8cc8825f5e866dd2a52225fda7d945a1598d}
+    version: 1.5.16
     engines: {node: '>=22'}
 
   typescript@6.0.3:
@@ -49,7 +51,7 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  parsanol@1.5.22: {}
+  parsanol@https://codeload.github.com/suleman-uzair/parsanol-ts/tar.gz/af5d8cc8825f5e866dd2a52225fda7d945a1598d: {}
 
   typescript@6.0.3: {}
 
