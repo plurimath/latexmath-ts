@@ -7,14 +7,13 @@ settings:
 importers:
 
   .:
-    dependencies:
-      parsanol:
-        specifier: git+https://github.com/suleman-uzair/parsanol-ts.git#af5d8cc8825f5e866dd2a52225fda7d945a1598d
-        version: https://codeload.github.com/suleman-uzair/parsanol-ts/tar.gz/af5d8cc8825f5e866dd2a52225fda7d945a1598d
     devDependencies:
       '@types/node':
         specifier: 22.20.5
         version: 22.20.5
+      parsanol:
+        specifier: git+https://github.com/suleman-uzair/parsanol-ts.git#af5d8cc8825f5e866dd2a52225fda7d945a1598d
+        version: https://codeload.github.com/suleman-uzair/parsanol-ts/tar.gz/af5d8cc8825f5e866dd2a52225fda7d945a1598d
       typescript:
         specifier: 6.0.3
         version: 6.0.3
